@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    #results {
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Conversor de Hashes</h1>
+  <input id="apiKey" type="password" placeholder="Ingresa tu API key">
+  <textarea id="input" placeholder="Ingresa los hashes separados por coma"></textarea>
+  <button id="convertButton">Buscar en VirusTotal</button>
+  <div id="results"></div>
+  
+  <script>
+    document.getElementById('convertButton').addEventListener('click', async function() {
+      var apiKey = document.getElementById('apiKey').value;
+      var input = document.getElementById('input').value.split(',');
+      var resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = '';
+
+      for (var i = 0; i < input.length; i++) {
+        try {
+          var response = await fetch(`https://www.virustotal.com/api/v3/files/${input[i].trim()}`, {
+            headers: {
+              "x-apikey": apiKey
+            }
+          });
+          var data = await response.json();
+
+          var resultDiv = document.createElement('div');
+          if (data.error) {
+            resultDiv.textContent = 'Hash: ' + input[i] + ', Error: ' + data.error.code + ' - ' + data.error.message;
+          } else {
+            resultDiv.textContent = 'Hash: ' + input[i] + ', Malicious: ' + data.data.attributes.last_analysis_stats.malicious;
+          }
+          resultsDiv.appendChild(resultDiv);
+        } catch (error) {
+          console.error('Error:', error);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
